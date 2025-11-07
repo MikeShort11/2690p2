@@ -57,7 +57,7 @@ int main(int argc, char *argv[])   // argc is # of strings following command, ar
    memset(&serverInfo, 0, sizeof(serverInfo)); //zero out the structure
    serverInfo.sin6_family = AF_INET6; //address family = IPv6
    serverInfo.sin6_port = htons(port); //convert int port to network order
-   serverInfo.sin6_addr = IN6ADDR_ANY; //any IPv6 address
+   serverInfo.sin6_addr = in6addr_any; //any IPv6 address
 
    int listenSocket;
    listenSocket = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP); //create a listen socket
@@ -75,7 +75,8 @@ int main(int argc, char *argv[])   // argc is # of strings following command, ar
 
    for (;;) {
       struct sockaddr_in6 clientInfo; //client address
-      int clientSocket = accept(listenSocket, (struct sockaddr *) &clientInfo, sizeof(clientInfo)); //accept an incoming connection
+      socklen_t clientAddrLen = sizeof(clientInfo);
+      int clientSocket = accept(listenSocket, (struct sockaddr *) &clientInfo, &clientAddrLen); //accept an incoming connection
       if (clientSocket == INVALID_SOCKET) {
          DisplayFatalErr("accept() failed");
       }
@@ -83,7 +84,7 @@ int main(int argc, char *argv[])   // argc is # of strings following command, ar
 
       //read the client request
       char request[RCVBUFSIZ + 1];
-      int bytesRead < recv(clientSocket, request, RCVBUFSIZ, 0);
+      int bytesRead = recv(clientSocket, request, RCVBUFSIZ, 0);
       if (bytesRead > 0) {
          request[bytesRead] = '\0';
          printf("Received request: %s\n", request);
